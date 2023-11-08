@@ -255,6 +255,3 @@ wrapt==1.15.0
 xxhash==3.1.0
 yarl==1.7.2
 youtube-dl==2021.12.17
-zc.lockfile==2.0
-zipp==3.8.1
-zstandard==0.21.0
