@@ -5,7 +5,6 @@ import time
 import requests
 from pytube import YouTube
 from supabase import create_client, Client
-import assemblyai as aai
 
 # Set up the API endpoint and headers
 base_url = "https://api.assemblyai.com/v2"
@@ -20,13 +19,6 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
 # Create a Supabase client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-# Initialize your AssemblyAI API key here
-assemblyai_api_key = os.environ.get("ASSEMBLYAI_API_KEY")
-aai.settings.api_key = assemblyai_api_key
-
-transcription_config = aai.TranscriptionConfig(auto_chapters=True)
-transcriber = aai.Transcriber(config=transcription_config)
 
 def convert_ms_to_time(milliseconds):
     seconds = milliseconds // 1000
