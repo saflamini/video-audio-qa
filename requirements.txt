@@ -1,6 +1,5 @@
 pip==23.3.1
 pytube==15.0.0
 streamlit==1.28.1
-supabase==1.0.3
+supabase==0.8.0
 assemblyai>=0.15.0
-realtime>=1.0.0
