@@ -159,9 +159,11 @@ with tab3:
         if st.button("Get Chapters"):
             try:
                 with st.spinner("Fetching chapters for the existing transcript..."):
-                    t = aai.Transcript.get_by_id(selected_transcript_id)
-                    for chapter in t.chapters:
-                        st.write(f"{convert_ms_to_time(chapter.start)} - {chapter.summary}")
+                    
+                    t = transcription_result = requests.get(base_url + "/transcript/" + selected_transcript_id, headers=headers).json()
+                    print(t['chapters'])
+                    for chapter in t['chapters']:
+                        st.write(f"{convert_ms_to_time(chapter['start'])} - {chapter['summary']}")
             except Exception as e:
                 st.error(f"An error occurred: {e}")
 
