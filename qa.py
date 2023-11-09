@@ -43,17 +43,6 @@ def fetch_transcribed_videos():
 def save_transcript(video_name, transcript_id):
     supabase.table("transcripts").insert({"content_name": video_name, "transcript_id": transcript_id}).execute()
 
-# def ask_question(transcript_id, question_text):
-#     transcript = aai.Transcript.get_by_id(transcript_id)
-#     result = transcript.lemur.task(
-#         prompt=f"""
-#         You are about to receive a question, and your job is to respond with the best possible answer.
-#         You are a helpful assistant who is trying their best to provide excellent answers to questions about video and audio content.
-#         {question_text}
-#         """
-#     )
-#     return result.response
-
 def ask_question(transcript_id, question_text):
     lemur_params = {
         "transcript_ids": [transcript_id],
@@ -96,18 +85,6 @@ def download_youtube_audio(url):
     audio_path = os.path.join(temp_dir, "video123.mp4")
     audio_stream.download(filename=audio_path)
     return audio_path, video_name
-
-# def transcribe_audio(file_path):
-#     transcript = transcriber.transcribe(file_path)
-#     attempts = 0
-#     while transcript.status != 'completed' and attempts < 10:
-#         time.sleep(5)
-#         transcript = transcriber.get_transcript(transcript.id)
-#         attempts += 1
-#     if transcript.status == 'completed':
-#         return transcript.text, transcript.id
-#     else:
-#         raise TimeoutError("Transcription took too long to complete.")
 
 def transcribe_audio(file_path):
     # Upload the audio file

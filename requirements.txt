@@ -2,5 +2,4 @@ pip==23.3.1
 pytube==15.0.0
 streamlit==1.28.1
 supabase==1.0.3
-assemblyai>=0.15.0
 requests>=2.25.1
