@@ -2,9 +2,17 @@ import streamlit as st
 import os
 import tempfile
 import time
+import requests
 from pytube import YouTube
 from supabase import create_client, Client
 import assemblyai as aai
+
+# Set up the API endpoint and headers
+base_url = "https://api.assemblyai.com/v2"
+headers = {
+    "authorization": os.environ.get("ASSEMBLYAI_API_KEY"),
+    "content-type": "application/json"
+}
 
 # Your Supabase credentials
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
@@ -35,16 +43,29 @@ def fetch_transcribed_videos():
 def save_transcript(video_name, transcript_id):
     supabase.table("transcripts").insert({"content_name": video_name, "transcript_id": transcript_id}).execute()
 
+# def ask_question(transcript_id, question_text):
+#     transcript = aai.Transcript.get_by_id(transcript_id)
+#     result = transcript.lemur.task(
+#         prompt=f"""
+#         You are about to receive a question, and your job is to respond with the best possible answer.
+#         You are a helpful assistant who is trying their best to provide excellent answers to questions about video and audio content.
+#         {question_text}
+#         """
+#     )
+#     return result.response
+
 def ask_question(transcript_id, question_text):
-    transcript = aai.Transcript.get_by_id(transcript_id)
-    result = transcript.lemur.task(
-        prompt=f"""
-        You are about to receive a question, and your job is to respond with the best possible answer.
-        You are a helpful assistant who is trying their best to provide excellent answers to questions about video and audio content.
-        {question_text}
-        """
-    )
-    return result.response
+    lemur_params = {
+        "transcript_ids": [transcript_id],
+        "prompt": question_text
+    }
+    lemur_url = "https://api.assemblyai.com/lemur/v3/generate/task"
+    lemur_response = requests.post(lemur_url, json=lemur_params, headers=headers)
+    lemur_result = lemur_response.json()
+
+    if "error" in lemur_result:
+        raise RuntimeError(f"Error: {lemur_result['error']}")
+    return lemur_result['response']
 
 # Function to handle audio file upload and transcription
 def transcribe_uploaded_audio(uploaded_file, episode_name):
@@ -76,17 +97,44 @@ def download_youtube_audio(url):
     audio_stream.download(filename=audio_path)
     return audio_path, video_name
 
+# def transcribe_audio(file_path):
+#     transcript = transcriber.transcribe(file_path)
+#     attempts = 0
+#     while transcript.status != 'completed' and attempts < 10:
+#         time.sleep(5)
+#         transcript = transcriber.get_transcript(transcript.id)
+#         attempts += 1
+#     if transcript.status == 'completed':
+#         return transcript.text, transcript.id
+#     else:
+#         raise TimeoutError("Transcription took too long to complete.")
+
 def transcribe_audio(file_path):
-    transcript = transcriber.transcribe(file_path)
-    attempts = 0
-    while transcript.status != 'completed' and attempts < 10:
-        time.sleep(5)
-        transcript = transcriber.get_transcript(transcript.id)
-        attempts += 1
-    if transcript.status == 'completed':
-        return transcript.text, transcript.id
-    else:
-        raise TimeoutError("Transcription took too long to complete.")
+    # Upload the audio file
+    with open(file_path, "rb") as f:
+        upload_response = requests.post(base_url + "/upload", headers=headers, data=f)
+    upload_url = upload_response.json()["upload_url"]
+
+    # Request transcription
+    transcription_request_data = {
+        "audio_url": upload_url,
+        "auto_chapters": True  # To match your original configuration
+    }
+    transcription_response = requests.post(base_url + "/transcript", json=transcription_request_data, headers=headers)
+    transcript_id = transcription_response.json()['id']
+
+    # Poll for transcription result
+    polling_endpoint = base_url + "/transcript/" + transcript_id
+    while True:
+        transcription_result = requests.get(polling_endpoint, headers=headers).json()
+        if transcription_result['status'] == 'completed':
+            return transcription_result['text'], transcript_id
+        elif transcription_result['status'] == 'error':
+            raise RuntimeError(f"Transcription failed: {transcription_result['error']}")
+        time.sleep(5)  # Adjusted to 5 seconds to match your original code
+
+    raise TimeoutError("Transcription took too long to complete.")
+
 
 # Streamlit app layout
 st.title("Audio + Video Transcriber and Q&A")
