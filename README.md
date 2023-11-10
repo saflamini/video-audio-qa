@@ -4,7 +4,7 @@ Use speech to text models and LLMs to process Youtube videos and podcasts 10x as
 
 This is a personal tool I created which makes it easy to find interesting moments within longer podcasts and youtube videos. Video & audio content is often harder to parse/skim through than written content, but running tool makes this easier to manage.
 
-This app is also a great demonstration of AssemblyAI's product suite which includes automatic speech recognition, automatic chapter generation, and LeMUR - a framework for pairing transcripts with LLMs.
+This app is also a great demonstration of [AssemblyAI's](https://www.assemblyai.com/) product suite which includes automatic speech recognition, automatic chapter generation, and [LeMUR](https://www.assemblyai.com/models/lemur/) - a framework for pairing transcripts with LLMs.
 
 ### Running this project
 
